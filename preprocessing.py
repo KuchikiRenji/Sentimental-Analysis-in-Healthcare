@@ -62,20 +62,20 @@ def clean_text(text):
 
 # Load and preprocess data
 def load_and_preprocess_data(train_file, test_file):
-    # Load the dataset
+    # Load the datasets separately
     trainDataset = pd.read_csv(train_file, sep='\t')
     testDataset = pd.read_csv(test_file, sep='\t')
 
-    # Concatenate train and test dataset
-    data = pd.concat([trainDataset, testDataset])
-
     # Rename columns for better understanding
-    data.columns = ['Id', 'drugName', 'condition', 'review', 'rating', 'date', 'usefulCount']
+    trainDataset.columns = ['Id', 'drugName', 'condition', 'review', 'rating', 'date', 'usefulCount']
+    testDataset.columns = ['Id', 'drugName', 'condition', 'review', 'rating', 'date', 'usefulCount']
 
     # Drop missing values
-    data.dropna(inplace=True)
+    trainDataset.dropna(inplace=True)
+    testDataset.dropna(inplace=True)
 
     # Apply text cleaning
-    data['clean_review'] = data['review'].apply(clean_text)
+    trainDataset['clean_review'] = trainDataset['review'].apply(clean_text)
+    testDataset['clean_review'] = testDataset['review'].apply(clean_text)
 
-    return data
+    return trainDataset, testDataset
