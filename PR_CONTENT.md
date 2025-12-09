@@ -1,237 +1,232 @@
-# Pull Request: Fix Critical Issues #1-5
+# Pull Request Information
+
+## Branch Name
+```
+fix/issues-6-10-readme-error-handling-cli
+```
 
 ## PR Title
 ```
-fix: Resolve critical issues - dependencies, code duplication, model consistency, multi-class evaluation, and data separation
+Fix Issues #6-10: README, Code Cleanup, Error Handling, CLI Arguments, and NLTK Standardization
 ```
 
 ## PR Body
 
 ```markdown
 ## Summary
-This PR addresses 5 critical issues identified in the project analysis, improving code quality, maintainability, and correctness of the sentiment analysis pipeline.
+This PR addresses issues #6 through #10, focusing on improving code quality, user experience, and maintainability. The changes include fixing documentation, cleaning up commented code, adding comprehensive error handling, making file paths configurable, and standardizing NLTK resource management.
 
 ## Issues Fixed
 
-### Issue #1: Missing scikit-learn Dependency
-- **Problem**: `scikit-learn` was used throughout the codebase but missing from `requirements.txt`
-- **Solution**: Added `scikit-learn>=1.0.0` to `requirements.txt`
-- **Impact**: Users can now install all dependencies with a single `pip install -r requirements.txt` command
+### Issue #6: README References Non-existent File ✅
+- **Problem**: README.md referenced `sentiment.py` which doesn't exist
+- **Solution**: Updated README to reference the correct entry point `main.py`
+- **Files Changed**: `README.md`
 
-### Issue #2: Code Duplication
-- **Problem**: Functions were redefined in `main.py` despite existing in separate modules
-- **Solution**: Removed duplicate function definitions from `main.py` and properly used module imports
-- **Impact**: Single source of truth for each function, easier maintenance
+### Issue #7: Large Blocks of Commented Code Should Be Removed ✅
+- **Problem**: Multiple files contained large blocks of commented-out code making the codebase harder to read
+- **Solution**: Removed all commented code blocks from `preprocessing.py` and `sentiment_labeling.py`
+- **Files Changed**: `preprocessing.py`, `sentiment_labeling.py`
 
-### Issue #3: Inconsistent Model Implementation
-- **Problem**: `Model.py` used `LogisticRegression` while `main.py` used `RandomForestClassifier`
-- **Solution**: Standardized on `RandomForestClassifier` in `Model.py` and updated `main.py` to use the module
-- **Impact**: Consistent model behavior across the codebase
+### Issue #8: Missing Error Handling ✅
+- **Problem**: Code lacked error handling for file operations, data processing, and model training
+- **Solution**: Added comprehensive error handling with try-except blocks, data validation, and informative error messages throughout the codebase
+- **Files Changed**: `main.py`, `preprocessing.py`, `Model.py`, `evaluation.py`, `sentiment_labeling.py`, `TF_IDF.py`
 
-### Issue #4: Evaluation Assumes Binary Classification
-- **Problem**: Evaluation functions assumed binary classification but the model has 3 classes (-1, 0, 1)
-- **Solution**: 
-  - Updated ROC and Precision-Recall curves to use one-vs-rest approach for multi-class
-  - Fixed probability index mapping to match model's class order
-  - Added macro-averaged metrics
-  - Updated confusion matrix to handle dynamic class labels
-- **Impact**: Correct evaluation metrics for the 3-class sentiment classification problem
+### Issue #9: Hardcoded File Paths ✅
+- **Problem**: File paths were hardcoded, making it difficult to use different datasets
+- **Solution**: Implemented command-line argument parsing using `argparse` to make file paths configurable
+- **Files Changed**: `main.py`
+- **New Features**:
+  - `--train-file` argument for specifying training data path
+  - `--test-file` argument for specifying test data path
+  - `--skip-interactive` flag to skip interactive query mode
+  - Default values maintain backward compatibility
 
-### Issue #5: Test Dataset Not Used Separately
-- **Problem**: Train and test datasets were concatenated, violating ML best practices
-- **Solution**: 
-  - Updated `preprocessing.py` to return separate train and test datasets
-  - Modified `main.py` to use train data for training/validation split and test data for final evaluation
-  - Updated TF-IDF to fit on training data only and transform test data
-- **Impact**: Proper train/test separation ensures unbiased model evaluation
+### Issue #10: Inconsistent NLTK Download Handling ✅
+- **Problem**: NLTK resource downloads were handled inconsistently across files
+- **Solution**: Created a utility module (`utils.py`) with standardized NLTK resource download functions that check for existing resources before downloading
+- **Files Changed**: `preprocessing.py`, `sentiment_labeling.py`
+- **New Files**: `utils.py`
 
-## Changes Made
+## Key Improvements
 
-### Files Modified
-- `requirements.txt`: Added scikit-learn dependency
-- `main.py`: Removed duplicate functions, updated to use module imports, separated train/test handling
-- `Model.py`: Changed from LogisticRegression to RandomForestClassifier, updated test_size to 0.3
-- `preprocessing.py`: Modified to return separate train and test datasets
-- `evaluation.py`: Complete rewrite of ROC/PR curve functions for multi-class, fixed class label mapping
-- `TF_IDF.py`: Added optional vectorizer parameter for transform-only operations
+1. **Better Error Messages**: All error messages are now clear and actionable
+2. **Logging**: Implemented proper logging throughout the codebase for better debugging
+3. **Data Validation**: Added validation checks at each processing step
+4. **User Experience**: Command-line interface makes the tool more flexible and user-friendly
+5. **Code Quality**: Removed dead code and improved code organization
+6. **Resource Management**: Consistent and efficient NLTK resource handling
 
 ## Testing
-- [x] Code runs without errors
-- [x] No linter errors
-- [x] Train/test data properly separated
-- [x] Evaluation metrics correctly calculated for 3-class problem
+- ✅ All existing functionality preserved
+- ✅ Backward compatible (default file paths work as before)
+- ✅ Error handling tested for common failure scenarios
+- ✅ No linting errors
 
 ## Breaking Changes
-⚠️ **Note**: The `preprocessing.py` function now returns a tuple `(train_data, test_data)` instead of a single concatenated dataframe. Any code calling this function needs to be updated.
+None - all changes are backward compatible.
 
-## Related Issues
-Fixes issues #1, #2, #3, #4, #5 from the project analysis.
-
-## Checklist
-- [x] Code follows project style guidelines
-- [x] Self-review completed
-- [x] Comments added for complex logic
-- [x] Documentation updated (if needed)
-- [x] No new warnings generated
-- [x] Tests pass (if applicable)
+## Additional Notes
+- Logging is configured to provide informative messages during execution
+- Error handling gracefully handles edge cases (empty files, missing columns, etc.)
+- The new `utils.py` module can be extended for additional shared utilities in the future
 ```
-
----
 
 ## Code Review Content
 
-### Overall Assessment
-**Status**: ✅ **APPROVE with Minor Suggestions**
+```markdown
+# Code Review: Fix Issues #6-10
 
-This PR addresses critical issues and significantly improves code quality. The changes are well-structured and maintain backward compatibility where possible. The multi-class evaluation fix is particularly important for correct model assessment.
+## Overview
+This PR addresses multiple code quality and usability issues. Overall, the changes are well-structured and maintain backward compatibility. Below is a detailed review.
+
+## ✅ Strengths
+
+### 1. Error Handling Implementation
+- **Excellent**: Comprehensive error handling added throughout the codebase
+- **Good Practice**: Validation checks before processing (file existence, data shape, etc.)
+- **User-Friendly**: Clear, actionable error messages
+- **Robust**: Handles edge cases like empty datasets, missing columns, and malformed data
+
+### 2. Logging Implementation
+- **Well Done**: Proper logging configuration with appropriate log levels
+- **Helpful**: Log messages provide context for debugging
+- **Consistent**: Logging format is consistent across modules
+
+### 3. CLI Implementation
+- **Clean**: Well-structured argument parsing using `argparse`
+- **Flexible**: Allows customization while maintaining defaults
+- **Documented**: Help text is clear and informative
+
+### 4. Code Cleanup
+- **Good**: Removed unnecessary commented code
+- **Maintainable**: Codebase is cleaner and easier to read
+
+### 5. NLTK Resource Management
+- **Smart**: Checks for existing resources before downloading
+- **Efficient**: Avoids unnecessary downloads
+- **Consistent**: Standardized approach across all modules
+
+## 📝 Suggestions for Improvement
+
+### 1. utils.py - NLTK Resource Path Mapping
+**Location**: `utils.py`, `download_nltk_resource()` function
+
+**Issue**: The resource path mapping might not cover all NLTK resources. Consider a more flexible approach:
+
+```python
+def download_nltk_resource(resource_name: str) -> None:
+    # Try to find the resource first
+    try:
+        # Try common paths
+        for path_template in [
+            f'tokenizers/{resource_name}',
+            f'corpora/{resource_name}',
+            f'sentiment/{resource_name}',
+            resource_name
+        ]:
+            try:
+                nltk.data.find(path_template)
+                logger.debug(f"NLTK resource '{resource_name}' already exists")
+                return
+            except LookupError:
+                continue
+    except Exception:
+        pass
+    
+    # If not found, download it
+    try:
+        logger.info(f"Downloading NLTK resource '{resource_name}'...")
+        nltk.download(resource_name, quiet=True)
+        logger.info(f"Successfully downloaded NLTK resource '{resource_name}'")
+    except Exception as e:
+        logger.error(f"Failed to download NLTK resource '{resource_name}': {str(e)}")
+        raise
+```
+
+**Priority**: Low (current implementation works, but could be more robust)
+
+### 2. Error Handling - Specific Exception Types
+**Location**: Multiple files
+
+**Suggestion**: Consider catching more specific exception types where possible:
+
+```python
+# Instead of generic Exception
+except FileNotFoundError as e:
+    # Handle file not found
+except pd.errors.EmptyDataError as e:
+    # Handle empty data
+except pd.errors.ParserError as e:
+    # Handle parsing errors
+```
+
+**Priority**: Low (current approach is acceptable)
+
+### 3. Data Validation - Type Hints
+**Location**: All function definitions
+
+**Note**: While not part of this PR, consider adding type hints in future PRs for better code documentation and IDE support.
+
+**Priority**: Low (can be addressed in a separate PR)
+
+### 4. Interactive Query Mode
+**Location**: `main.py`, `interactive_query()` function
+
+**Suggestion**: Consider adding input validation for medication and condition names:
+
+```python
+if not medication or medication.strip() == '':
+    print("Error: Medication name cannot be empty.")
+    return
+```
+
+**Priority**: Low (nice to have)
+
+## 🔍 Code Quality Checks
+
+### Linting
+- ✅ No linting errors reported
+- ✅ Code follows Python conventions
+
+### Documentation
+- ✅ Functions have docstrings
+- ✅ Docstrings are clear and informative
+- ⚠️ Consider adding module-level docstrings
+
+### Testing
+- ⚠️ Consider adding unit tests for:
+  - Error handling scenarios
+  - CLI argument parsing
+  - NLTK resource download utility
+  - Data validation functions
+
+## 🎯 Overall Assessment
+
+**Status**: ✅ **APPROVE** (with minor suggestions)
+
+This PR successfully addresses all five issues (#6-10) with high-quality implementations. The code is:
+- Well-structured and maintainable
+- Backward compatible
+- Properly documented
+- Error-resilient
+
+The suggestions above are minor improvements that can be addressed in future PRs or follow-up commits.
+
+## Recommended Actions
+
+1. ✅ **Approve and Merge** - The PR is ready to merge
+2. 📝 Consider addressing the suggestions in a follow-up PR
+3. 🧪 Consider adding unit tests for the new error handling and utilities
+
+## Questions for Author
+
+1. Have you tested the CLI with different file paths?
+2. Have you tested error scenarios (missing files, malformed data, etc.)?
+3. Would you like to add unit tests in a follow-up PR?
 
 ---
 
-### Detailed Review
-
-#### ✅ **Strengths**
-
-1. **Dependency Management (Issue #1)**
-   - ✅ Correctly added `scikit-learn>=1.0.0` to requirements
-   - ✅ Version constraint is appropriate (allows updates while ensuring minimum version)
-
-2. **Code Organization (Issue #2)**
-   - ✅ Successfully removed all duplicate functions from `main.py`
-   - ✅ Clean use of module imports
-   - ✅ Code is now more maintainable
-
-3. **Model Consistency (Issue #3)**
-   - ✅ Standardized on RandomForestClassifier
-   - ✅ Model.py now matches the actual usage pattern
-   - ✅ Consistent test_size parameter (0.3)
-
-4. **Multi-class Evaluation (Issue #4)**
-   - ✅ Properly implements one-vs-rest approach for ROC/PR curves
-   - ✅ Correctly maps class labels to probability indices using `model.classes_`
-   - ✅ Includes macro-averaged metrics
-   - ✅ Handles dynamic class labels correctly
-
-5. **Data Separation (Issue #5)**
-   - ✅ Proper train/test separation
-   - ✅ TF-IDF fitted only on training data
-   - ✅ Test data used only for final evaluation
-
----
-
-#### ⚠️ **Suggestions for Improvement**
-
-1. **Error Handling** (Minor)
-   ```python
-   # In main.py, consider adding try-except for file operations
-   try:
-       train_data, test_data = load_and_preprocess_data(train_file, test_file)
-   except FileNotFoundError as e:
-       print(f"Error: Could not find data file: {e}")
-       return
-   ```
-   **Priority**: Low (can be addressed in future PR)
-
-2. **Documentation** (Minor)
-   - Consider adding docstrings to the updated functions in `evaluation.py`
-   - Document the breaking change in `preprocessing.py` more prominently
-   **Priority**: Low
-
-3. **Type Hints** (Enhancement)
-   - Consider adding type hints to function signatures (e.g., in `evaluation.py`)
-   - Would improve IDE support and code clarity
-   **Priority**: Low (can be separate PR)
-
-4. **Validation** (Enhancement)
-   - Consider adding validation to ensure train/test datasets have the same columns
-   - Validate that required columns exist before processing
-   **Priority**: Low
-
----
-
-#### 🔍 **Code-Specific Comments**
-
-**File: `evaluation.py`**
-- ✅ Excellent handling of multi-class ROC/PR curves
-- ✅ Good use of `model.classes_` to ensure correct probability mapping
-- ⚠️ **Line 60-61**: The class label mapping logic is correct but could benefit from a comment explaining why we use `class_to_index`
-- ✅ Macro-averaging is appropriate for imbalanced multi-class problems
-
-**File: `preprocessing.py`**
-- ✅ Clean separation of train/test
-- ⚠️ **Breaking Change**: The return type change is necessary but should be clearly documented
-- ✅ Consistent preprocessing applied to both datasets
-
-**File: `main.py`**
-- ✅ Much cleaner without duplicate functions
-- ✅ Proper use of module imports
-- ⚠️ **Line 47**: Consider adding a comment explaining why we combine train/test for the query function (it's for user interaction, which is fine)
-
-**File: `Model.py`**
-- ✅ Consistent with actual usage
-- ✅ Appropriate model choice (RandomForestClassifier)
-- ✅ Test size matches main.py usage
-
-**File: `TF_IDF.py`**
-- ✅ Good addition of optional vectorizer parameter
-- ✅ Allows for fit/transform separation
-- ✅ Docstring added (good practice)
-
----
-
-#### 🧪 **Testing Recommendations**
-
-1. **Manual Testing**
-   - ✅ Run the full pipeline to ensure it works end-to-end
-   - ✅ Verify evaluation outputs are generated correctly
-   - ✅ Check that train/test separation is maintained
-
-2. **Edge Cases to Consider** (Future)
-   - What happens if test data has classes not seen in training?
-   - What if one of the datasets is empty?
-   - What if class distribution is highly imbalanced?
-
----
-
-#### 📝 **Documentation Notes**
-
-1. **README Update Needed**
-   - The README mentions `sentiment.py` but the file is `main.py` (separate issue, but worth noting)
-   - Consider documenting the new preprocessing return format
-
-2. **Breaking Changes**
-   - ⚠️ Clearly document that `preprocessing.load_and_preprocess_data()` now returns a tuple
-   - Update any examples or documentation that call this function
-
----
-
-### Final Verdict
-
-**Recommendation**: ✅ **APPROVE**
-
-This PR successfully addresses all 5 critical issues. The code is cleaner, more maintainable, and correctly implements multi-class evaluation. The breaking change in `preprocessing.py` is necessary and well-justified.
-
-**Suggested Follow-ups** (for future PRs):
-- Add error handling (Issue #8)
-- Add type hints (Issue #11)
-- Add unit tests (Issue #15)
-- Update README (Issue #6, #17)
-
----
-
-### Review Checklist
-
-- [x] Code follows project conventions
-- [x] No obvious bugs introduced
-- [x] Performance considerations addressed
-- [x] Security concerns considered (N/A for this PR)
-- [x] Documentation updated (minimal needed)
-- [x] Breaking changes documented
-- [x] Tests pass (manual testing completed)
-- [x] Code is maintainable
-
----
-
-**Reviewed by**: [Reviewer Name]  
-**Date**: [Date]  
-**Status**: ✅ Approved
-
+**Reviewer Notes**: Great work on improving code quality and user experience! The error handling and CLI implementation are particularly well done.
+```
