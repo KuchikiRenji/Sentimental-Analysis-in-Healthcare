@@ -202,34 +202,91 @@ def save_evaluation_to_text(y_test, y_pred, y_proba, model_classes, macro_roc_au
 
 # Function to evaluate the model's performance and save outputs
 def evaluate_model(model, X_test, y_test):
-    # Make predictions
-    y_pred = model.predict(X_test)
-    y_proba = model.predict_proba(X_test)  # Probability estimates for all classes
+    """
+    Evaluate model performance and save evaluation outputs.
     
-    # Get the order of classes as used by the model
-    model_classes = model.classes_
+    Args:
+        model: Trained classifier model
+        X_test: Test feature matrix
+        y_test: Test target labels
+    
+    Raises:
+        ValueError: If inputs are invalid
+        Exception: If evaluation fails
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        # Validate inputs
+        if model is None:
+            raise ValueError("Model cannot be None")
+        if X_test is None or X_test.shape[0] == 0:
+            raise ValueError("Test feature matrix X_test is None or empty")
+        if y_test is None or len(y_test) == 0:
+            raise ValueError("Test labels y_test is None or empty")
+        if X_test.shape[0] != len(y_test):
+            raise ValueError(f"X_test has {X_test.shape[0]} samples but y_test has {len(y_test)} samples")
+        
+        logger.info(f"Evaluating model on {len(y_test)} test samples...")
+        
+        # Make predictions
+        try:
+            y_pred = model.predict(X_test)
+            y_proba = model.predict_proba(X_test)  # Probability estimates for all classes
+        except Exception as e:
+            logger.error(f"Error making predictions: {str(e)}")
+            raise
+        
+        # Get the order of classes as used by the model
+        model_classes = model.classes_
 
-    # Evaluate model accuracy and classification report
-    accuracy = accuracy_score(y_test, y_pred)
-    print(f"Accuracy on test data: {accuracy:.4f}")
-    print("Classification Report:")
-    report = classification_report(y_test, y_pred)
-    print(report)
+        # Evaluate model accuracy and classification report
+        accuracy = accuracy_score(y_test, y_pred)
+        print(f"Accuracy on test data: {accuracy:.4f}")
+        print("Classification Report:")
+        report = classification_report(y_test, y_pred)
+        print(report)
 
-    # Save confusion matrix plot
-    plot_confusion_matrix(y_test, y_pred)
+        # Save confusion matrix plot
+        try:
+            plot_confusion_matrix(y_test, y_pred)
+        except Exception as e:
+            logger.warning(f"Error plotting confusion matrix: {str(e)}")
 
-    # Save ROC curve plot (returns macro-averaged AUC)
-    macro_roc_auc = plot_roc_curve(y_test, y_proba, model_classes)
+        # Save ROC curve plot (returns macro-averaged AUC)
+        try:
+            macro_roc_auc = plot_roc_curve(y_test, y_proba, model_classes)
+        except Exception as e:
+            logger.warning(f"Error plotting ROC curve: {str(e)}")
+            macro_roc_auc = 0.0
 
-    # Save Precision-Recall curve plot (returns macro-averaged PR-AUC)
-    macro_pr_auc = plot_precision_recall_curve(y_test, y_proba, model_classes)
+        # Save Precision-Recall curve plot (returns macro-averaged PR-AUC)
+        try:
+            macro_pr_auc = plot_precision_recall_curve(y_test, y_proba, model_classes)
+        except Exception as e:
+            logger.warning(f"Error plotting Precision-Recall curve: {str(e)}")
+            macro_pr_auc = 0.0
 
-    # Save accuracy graph
-    plot_accuracy(y_test, y_pred)
+        # Save accuracy graph
+        try:
+            plot_accuracy(y_test, y_pred)
+        except Exception as e:
+            logger.warning(f"Error plotting accuracy graph: {str(e)}")
 
-    # Save evaluation report to a text file
-    save_evaluation_to_text(y_test, y_pred, y_proba, model_classes, macro_roc_auc, macro_pr_auc)
+        # Save evaluation report to a text file
+        try:
+            save_evaluation_to_text(y_test, y_pred, y_proba, model_classes, macro_roc_auc, macro_pr_auc)
+            logger.info("Evaluation completed successfully. Results saved to output/ directory.")
+        except Exception as e:
+            logger.warning(f"Error saving evaluation report: {str(e)}")
+            
+    except ValueError as e:
+        logger.error(f"Data validation error during evaluation: {str(e)}")
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error during evaluation: {str(e)}")
+        raise
 
 # Example usage (assuming you have a model, X_test, and y_test ready)
 # evaluate_model(your_model, X_test, y_test)
